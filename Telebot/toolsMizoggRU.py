@@ -15,9 +15,9 @@ try:
     import base58
     from rich import print
     from bloomfilter import BloomFilter, ScalableBloomFilter, SizeGrowthRate
-    
-    
-    
+
+
+
 except ImportError:
     import subprocess
     subprocess.check_call(["python", '-m', 'pip', 'install', 'bit']) # https://pypi.org/project/bit/
@@ -45,11 +45,11 @@ print('[yellow] Please with Database Loading.....[/yellow]')
 
 with open("btc.bf", "rb") as fp:
     bloom_filter = BloomFilter.load(fp)
-btc_count = len(bloom_filter)    
+btc_count = len(bloom_filter)
 print('[yellow] Bitcoin Addresses Loaded  >> [ [/yellow]', btc_count, '[yellow]][/yellow]')
-    
+
 with open("eth.bf", "rb") as fp:
-    bloom_filter1 = BloomFilter.load(fp)   
+    bloom_filter1 = BloomFilter.load(fp)
 eth_count = len(bloom_filter1)
 print('[yellow] ETH Addresses Loaded  >> [ [/yellow]', eth_count, '[yellow]][/yellow]')
 
@@ -64,9 +64,7 @@ maxN = 1157920892373161954235709850086879078528375642790749043826051631415181614
 mylist = []
 
 with open('words.txt', newline='', encoding='utf-8') as f:
-    for line in f:
-        mylist.append(line.strip())
-
+    mylist.extend(line.strip() for line in f)
 with open('english.txt') as f:
     wordlist = f.read().split('\n')
 
@@ -127,21 +125,20 @@ def create_valid_mnemonics(strength=128):
 
     rbytes = os.urandom(strength // 8)
     h = hashlib.sha256(rbytes).hexdigest()
-    
+
     b = ( bin(int.from_bytes(rbytes, byteorder="big"))[2:].zfill(len(rbytes) * 8) \
          + bin(int(h, 16))[2:].zfill(256)[: len(rbytes) * 8 // 32] )
-    
-    result = []
-    for i in range(len(b) // 11):
-        idx = int(b[i * 11 : (i + 1) * 11], 2)
-        result.append(wordlist[idx])
 
+    result = [
+        wordlist[int(b[i * 11 : (i + 1) * 11], 2)] for i in range(len(b) // 11)
+    ]
     return " ".join(result)
 
 def mnem_to_seed(words):
     salt = 'mnemonic'
-    seed = hashlib.pbkdf2_hmac("sha512",words.encode("utf-8"), salt.encode("utf-8"), 2048)
-    return seed
+    return hashlib.pbkdf2_hmac(
+        "sha512", words.encode("utf-8"), salt.encode("utf-8"), 2048
+    )
 
 
 def bip39seed_to_bip32masternode(seed):
@@ -151,7 +148,7 @@ def bip39seed_to_bip32masternode(seed):
 
 def parse_derivation_path(str_derivation_path="m/44'/0'/0'/0/0"):      # 60' is for ETH 0' is for BTC
     path = []
-    if str_derivation_path[0:2] != 'm/':
+    if str_derivation_path[:2] != 'm/':
         raise ValueError("Can't recognize derivation path. It should look like \"m/44'/0'/0'/0\".")
     for i in str_derivation_path.lstrip('m/').split('/'):
         if "'" in i:
@@ -162,7 +159,7 @@ def parse_derivation_path(str_derivation_path="m/44'/0'/0'/0/0"):      # 60' is 
 
 def parse_derivation_path2(str_derivation_path="m/49'/0'/0'/0/0"):      
     path = []
-    if str_derivation_path[0:2] != 'm/':
+    if str_derivation_path[:2] != 'm/':
         raise ValueError("Can't recognize derivation path. It should look like \"m/49'/0'/0'/0\".")
     for i in str_derivation_path.lstrip('m/').split('/'):
         if "'" in i:
@@ -239,48 +236,51 @@ def bip39seed_to_private_key4(bip39seed, n=1):
 # =============================================================================
 def get_balance(caddr):
     h = httplib2.Http(".cache")
-    (resp_headers, content) = h.request("https://btcbook.guarda.co/api/v2/address/" + caddr, "GET")
-    resload = json.loads(content.decode("utf-8"))
-    return resload
+    (resp_headers, content) = h.request(
+        f"https://btcbook.guarda.co/api/v2/address/{caddr}", "GET"
+    )
+    return json.loads(content.decode("utf-8"))
     
 def get_balance1(uaddr):
     h = httplib2.Http(".cache")
-    (resp_headers, content) = h.request("https://btcbook.guarda.co/api/v2/address/" + uaddr, "GET")
-    resload1 = json.loads(content.decode("utf-8"))
-    return resload1
+    (resp_headers, content) = h.request(
+        f"https://btcbook.guarda.co/api/v2/address/{uaddr}", "GET"
+    )
+    return json.loads(content.decode("utf-8"))
 
 def get_balance2(p2sh):
     h = httplib2.Http(".cache")
-    (resp_headers, content) = h.request("https://btcbook.guarda.co/api/v2/address/" + p2sh, "GET")
-    resload2 = json.loads(content.decode("utf-8"))
-    return resload2
+    (resp_headers, content) = h.request(
+        f"https://btcbook.guarda.co/api/v2/address/{p2sh}", "GET"
+    )
+    return json.loads(content.decode("utf-8"))
 
 def get_balance3(bech32):
     h = httplib2.Http(".cache")
-    (resp_headers, content) = h.request("https://btcbook.guarda.co/api/v2/address/" + bech32, "GET")
-    resload3 = json.loads(content.decode("utf-8"))
-    return resload3
+    (resp_headers, content) = h.request(
+        f"https://btcbook.guarda.co/api/v2/address/{bech32}", "GET"
+    )
+    return json.loads(content.decode("utf-8"))
     
 def get_balance4(ethaddr):
     h = httplib2.Http(".cache")
-    (resp_headers, content) = h.request("https://ethbook.guarda.co/api/v2/address/" + ethaddr, "GET")
-    resload4 = json.loads(content.decode("utf-8"))
-    return resload4
+    (resp_headers, content) = h.request(
+        f"https://ethbook.guarda.co/api/v2/address/{ethaddr}", "GET"
+    )
+    return json.loads(content.decode("utf-8"))
 # =============================================================================
 class BrainWallet:
 
     @staticmethod
     def generate_address_from_passphrase(passphrase):
-        private_key = str(hashlib.sha256(
-            passphrase.encode('utf-8')).hexdigest())
+        private_key = hashlib.sha256(passphrase.encode('utf-8')).hexdigest()
         address =  BrainWallet.generate_address_from_private_key(private_key)
         return private_key, address
 
     @staticmethod
     def generate_address_from_private_key(private_key):
         public_key = BrainWallet.__private_to_public(private_key)
-        address = BrainWallet.__public_to_address(public_key)
-        return address
+        return BrainWallet.__public_to_address(public_key)
 
     @staticmethod
     def __private_to_public(private_key):
@@ -292,8 +292,7 @@ class BrainWallet:
         key_hex = codecs.encode(key_bytes, 'hex')
         # Add bitcoin byte
         bitcoin_byte = b'04'
-        public_key = bitcoin_byte + key_hex
-        return public_key
+        return bitcoin_byte + key_hex
 
     @staticmethod
     def __public_to_address(public_key):
@@ -320,8 +319,7 @@ class BrainWallet:
         checksum = sha256_2_hex[:8]
         # Concatenate public key and checksum to get the address
         address_hex = (network_bitcoin_public_key + checksum).decode('utf-8')
-        wallet = BrainWallet.base58(address_hex)
-        return wallet
+        return BrainWallet.base58(address_hex)
 
     @staticmethod
     def base58(address_hex):
@@ -339,8 +337,8 @@ class BrainWallet:
             address_int //= 58
         # Add '1' for each 2 leading zeros
         ones = leading_zeros // 2
-        for one in range(ones):
-            b58_string = '1' + b58_string
+        for _ in range(ones):
+            b58_string = f'1{b58_string}'
         return b58_string
 # =============================================================================
 @bot.message_handler(commands=["start"])
@@ -377,15 +375,18 @@ def get_text(message):
         back = types.KeyboardButton("🔙Назад")
         markup_crypto.add(option1, option2, option3, option4, option5, option6, option7, option8, option9, back)
         bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Выберите ₿itcoin, Bitcoin Cash, Ethereum и Ethereum Classic, Litecoin, Dogecoin, DASH, монету Raven, кнопку проверки баланса ZCASH. 🪓🔨⛏️", reply_markup=markup_crypto)
-    
+
     if message.text=="🔙Назад":
         start(message)
-        
+
     if message.text=="ℹ️ПОМОЩЬ и информация🦮":
-        bot.send_message(message.chat.id, f" ⛔️⚠️ВНИМАНИЕ ВСЕМ, Во избежание проблем данный бот @Mizoggs_Crypto_Tools_RU_Bot находится в ТЕСТ режиме, проверяем его на ошибки, скорость и все остальное, не используйте свои личные адреса, пароли и все прочее, во избежание проблем, вся положительная информация поступает на автор он все видит, думаю все поняли!!! Пожалуйста, ознакомьтесь с основными взломщиками криптовалют https://t.me/CryptoCrackersUK ⛔️⚠️ НЕ ИСПОЛЬЗУЙТЕ СВОИ ЧАСТНЫЕ КЛЮЧИ⚠️⛔️")
+        bot.send_message(
+            message.chat.id,
+            " ⛔️⚠️ВНИМАНИЕ ВСЕМ, Во избежание проблем данный бот @Mizoggs_Crypto_Tools_RU_Bot находится в ТЕСТ режиме, проверяем его на ошибки, скорость и все остальное, не используйте свои личные адреса, пароли и все прочее, во избежание проблем, вся положительная информация поступает на автор он все видит, думаю все поняли!!! Пожалуйста, ознакомьтесь с основными взломщиками криптовалют https://t.me/CryptoCrackersUK ⛔️⚠️ НЕ ИСПОЛЬЗУЙТЕ СВОИ ЧАСТНЫЕ КЛЮЧИ⚠️⛔️",
+        )
         time.sleep(2.5)
         start(message) 
-    
+
     if message.text=="🪙BTC Адрес с проверкой баланса🪙":
         print('[red]Bitcoin Инструмент проверки информации о балансе адреса введен [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -395,7 +396,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Пожалуйста входите ₿itcoin Адрес для проверки ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_address)
-        
+
     if message.text=="🪙BCH Адрес с проверкой баланса🪙":
         print('[red]Bitcoin Cash Инструмент проверки информации о балансе адреса введен [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -415,7 +416,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Пожалуйста входите Ethereum Адрес для проверки ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_address_ETH)
-        
+
     if message.text=="🪙ETC Адрес с проверкой баланса🪙":
         print('[red]Ethereum Classic Инструмент проверки информации о балансе адреса введен [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -425,7 +426,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Пожалуйста входите Ethereum Classic Адрес для проверки ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_address_ETC)
-        
+
     if message.text=="🪙LTC Адрес с проверкой баланса🪙":
         print('[red]Litecoin Инструмент проверки информации о балансе адреса введен [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -435,7 +436,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Пожалуйста входите Litecoin Адрес для проверки ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_address_LTC)
-        
+
     if message.text=="🪙DOGE Адрес с проверкой баланса🪙":
         print('[red]DOGE Coin Инструмент проверки информации о балансе адреса введен [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -445,7 +446,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Пожалуйста входите Dogecoin Адрес для проверки ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_address_DOGE)
-        
+
     if message.text=="🪙DASH Адрес с проверкой баланса🪙":
         print('[red]DASH Coin Инструмент проверки информации о балансе адреса введен [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -455,7 +456,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Пожалуйста входите Dash Адрес для проверки ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_address_DASH)
-        
+
     if message.text=="🪙Raven Адрес с проверкой баланса🪙":
         print('[red]Raven Coin Инструмент проверки информации о балансе адреса введен [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -475,7 +476,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! Пожалуйста входите Zcash Адрес для проверки ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_address_ZEC)
-        
+
     if message.text=="🔨HEX to Адрес с проверкой баланса🔨":
         print('[red]HEX в средство проверки адреса введено [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -485,7 +486,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! 🔨HEX to Адрес с проверкой баланса Пожалуйста входите a Hexadecimal Private Key to Begin (Hexadecimal (or hex) is a base 16 system used to simplify how binary is represented. A hex digit can be any of the following 16 digits: 0 1 2 3 4 5 6 7 8 9 A B C D E F.)", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_HEX)
-        
+
     if message.text=="⛏️DEC to Адрес с проверкой баланса⛏️":
         print('[red]DEC в средство проверки адреса введено [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -495,7 +496,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! ⛏️DEC to Адрес с проверкой баланса Пожалуйста входите a Decimal Private Key to Begin. Decimal System lets us write numbers as large or as small as we want within the 256Bit Range ", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_DEC)
-    
+
     if message.text=="🔥WIF to Адрес с проверкой баланса🔥":
         print('[red]WIF в средство проверки адреса введено [/red]')
         markup_back = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -505,7 +506,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! 🔥WIF to ₿itcoin Адрес с проверкой баланса", reply_markup=markup_back)
 
         bot.register_next_step_handler(send_message, get_WIF)
-     
+
     if message.text=="🧠BrainWallet to Адрес с проверкой баланса🧠":
         markup_brain = types.ReplyKeyboardMarkup(resize_keyboard=True)
         option1 = types.KeyboardButton("🧠Введите свой собственный мозговой кошелек🧠")
@@ -568,7 +569,7 @@ def get_text(message):
         send_message = bot.send_message(message.chat.id, f"🤖 {message.from_user.first_name}! 🔋words часа силы 🔋✨(Про)✨", reply_markup=markup_power)
 
         bot.register_next_step_handler(send_message, get_POWER)
-        
+
     if message.text=="🔋Диапазон часов мощности 🔋✨(Про)✨":
         print('[red]Power Hour Tool Entered [/red]')
         markup_POWER_FULLRANGE = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -618,14 +619,14 @@ def get_text(message):
         bot.register_next_step_handler(send_message, get_POWER_RANGE)
         
 def get_address(message):
-    if message.text=="🔙Назад":
-        start(message)
-    else:
-        caddr = message.text
+    if message.text != "🔙Назад":
         if message.content_type == "text":
+            caddr = message.text
             try:
                 h = httplib2.Http(".cache")
-                (resp_headers, content) = h.request("https://btcbook.guarda.co/api/v2/address/" + caddr, "GET")
+                (resp_headers, content) = h.request(
+                    f"https://btcbook.guarda.co/api/v2/address/{caddr}", "GET"
+                )
                 res = json.loads(content.decode("utf-8"))
                 balance = (res['balance'])
                 totalReceived = (res['totalReceived'])
@@ -635,13 +636,15 @@ def get_address(message):
                 n = "\n"
                 bot.send_message(message.chat.id, f"        👇 ₿itcoin Адрес введен 👇{n}{n} {addressinfo} {n}{n}      💰 Balance 💰 {balance}  BTC {n}      💸 TotalReceived 💸 {totalReceived} {n}      📤 TotalSent 📤 {totalSent} {n}      💵 Transactions 💵 {txs}")
                 print('[purple] Bitcoin Address Entered  >> [ [/purple]', addressinfo, '[purple]][/purple]')
-                print('[red][*][/red] [purple] >>[/purple] Balance: [green] [' + str(balance) + '][/green] totalReceived: [green][' +  str(totalReceived) + '][/green] totalSent:[green][' + str(totalSent) + '][/green] txs :[green][' + str(txs) + '][/green]')
+                print(
+                    f'[red][*][/red] [purple] >>[/purple] Balance: [green] [{str(balance)}][/green] totalReceived: [green][{str(totalReceived)}][/green] totalSent:[green][{str(totalSent)}][/green] txs :[green][{str(txs)}][/green]'
+                )
             except:
                 bot.send_message(message.chat.id, "🚫 This ₿itcoin адрес недействителен 🤪 Адрес BTC является буквенно-цифровым и всегда начинается с 1, 3 или bc1. Это пример адреса получателя: 1FeexV6bAHb8ybZjqQMjJrcCrHGW9sb6uF . Обратите внимание: это всего лишь пример адреса.")
                 print('[red] This Bitcoin адрес недействителен [/red]')
         else:
             bot.send_message(message.chat.id, "🚫 This ₿itcoin адрес недействителен 🤪 Отправить в текстовом формате")
-        start(message)
+    start(message)
 
 def get_address_BCH(message):
     if message.text=="🔙Назад":

@@ -57,49 +57,61 @@ Mizogg = '''[red]
 [/red]'''
 # =============================================================================
 def get_balance(caddr):
-    response = requests.get("https://blockstream.info/api/address/" + str(caddr))
+    response = requests.get(f"https://blockstream.info/api/address/{str(caddr)}")
     balance = float(response.json()['chain_stats']['funded_txo_sum'])
     totalSent = float(response.json()['chain_stats']['spent_txo_sum'])
     txs = response.json()['chain_stats']['funded_txo_count']
     print('BTC Address : ', caddr)
-    print('[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [' + str(balance) + '][/green] totalSent:[green][' + str(totalSent) + '][/green] txs :[green][' + str(txs) + '][/green]')
+    print(
+        f'[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [{balance}][/green] totalSent:[green][{totalSent}][/green] txs :[green][{str(txs)}][/green]'
+    )
     return balance
 
     
 def get_balance1(uaddr):
-    response = requests.get("https://blockstream.info/api/address/" + str(uaddr))
+    response = requests.get(f"https://blockstream.info/api/address/{str(uaddr)}")
     balance1 = float(response.json()['chain_stats']['funded_txo_sum'])
     totalSent = float(response.json()['chain_stats']['spent_txo_sum'])
     txs = response.json()['chain_stats']['funded_txo_count']
     print('BTC Address : ', uaddr)
-    print('[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [' + str(balance1) + '][/green] totalSent:[green][' + str(totalSent) + '][/green] txs :[green][' + str(txs) + '][/green]')
+    print(
+        f'[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [{balance1}][/green] totalSent:[green][{totalSent}][/green] txs :[green][{str(txs)}][/green]'
+    )
     return balance1
 
 def get_balance2(p2sh):
-    response = requests.get("https://blockstream.info/api/address/" + str(p2sh))
+    response = requests.get(f"https://blockstream.info/api/address/{str(p2sh)}")
     balance2 = float(response.json()['chain_stats']['funded_txo_sum'])
     totalSent = float(response.json()['chain_stats']['spent_txo_sum'])
     txs = response.json()['chain_stats']['funded_txo_count']
     print('BTC Address : ', p2sh)
-    print('[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [' + str(balance2) + '][/green] totalSent:[green][' + str(totalSent) + '][/green] txs :[green][' + str(txs) + '][/green]')
+    print(
+        f'[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [{balance2}][/green] totalSent:[green][{totalSent}][/green] txs :[green][{str(txs)}][/green]'
+    )
     return balance2
 
 def get_balance3(bech32):
-    response = requests.get("https://blockstream.info/api/address/" + str(bech32))
+    response = requests.get(f"https://blockstream.info/api/address/{str(bech32)}")
     balance3 = float(response.json()['chain_stats']['funded_txo_sum'])
     totalSent = float(response.json()['chain_stats']['spent_txo_sum'])
     txs = response.json()['chain_stats']['funded_txo_count']
     print('BTC Address : ', bech32)
-    print('[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [' + str(balance3) + '][/green] totalSent:[green][' + str(totalSent) + '][/green] txs :[green][' + str(txs) + '][/green]')
+    print(
+        f'[red][*][/red] [yellow] >>[/yellow] Total Received: [green] [{balance3}][/green] totalSent:[green][{totalSent}][/green] txs :[green][{str(txs)}][/green]'
+    )
     return balance3
     
 def get_balance4(ethaddr):
-    blocs = requests.get("https://api.ethplorer.io/getAddressInfo/" + ethaddr + APIKEY)
+    blocs = requests.get(
+        f"https://api.ethplorer.io/getAddressInfo/{ethaddr}{APIKEY}"
+    )
     ress = blocs.json()
     balance4 = float(blocs.json()['ETH']['balance'])
     txs = dict(ress)["countTxs"]
     print('ETH Address : ', ethaddr)
-    print('[red][*][/red] [yellow] >>[/yellow] Balance: [green] [' + str(balance4) + '][/green] Transactions: [green][' +  str(txs) + '][/green]')
+    print(
+        f'[red][*][/red] [yellow] >>[/yellow] Balance: [green] [{balance4}][/green] Transactions: [green][{str(txs)}][/green]'
+    )
     return balance4
     
 # =============================================================================
@@ -123,9 +135,8 @@ def iter_all_front(count):
         for HEXIN in "0123456789abcdef":
             if count == HEXIN:
                 continue
-            else:
-                for scan in iter_all_front(count-1):
-                    yield HEXIN + scan
+            for scan in iter_all_front(count-1):
+                yield HEXIN + scan
                     
 def iter_all_back(count):
     if count == 0:
@@ -134,9 +145,8 @@ def iter_all_back(count):
         for HEXIN in "0123456789abcdef":
             if count == HEXIN:
                 continue
-            else:
-                for scan in iter_all_back(count-1):
-                    yield scan + HEXIN
+            for scan in iter_all_back(count-1):
+                yield scan + HEXIN
 
 def save_data_plain():
     with open("winner.txt", "a", encoding="utf-8") as f:
@@ -193,7 +203,7 @@ Bitcoin Address p2sh         = {p2sh1}
 Bitcoin Address Bc1  bech32  = {bech321}""")
 # =============================================================================
 def data_info():
-    blocs=requests.get("https://blockchain.info/rawaddr/"+caddr)
+    blocs = requests.get(f"https://blockchain.info/rawaddr/{caddr}")
     ress = blocs.json()
     hash160 = dict(ress)["hash160"]
     address = dict(ress)["address"]
@@ -213,25 +223,24 @@ def data_info():
     })
 # =============================================================================
 def get_doge(daddr):
-    Dogecoin = requests.get("https://dogechain.info/api/v1/address/balance/"+ daddr)
+    Dogecoin = requests.get(
+        f"https://dogechain.info/api/v1/address/balance/{daddr}"
+    )
     resedoge = Dogecoin.json()
-    BalanceDoge = dict(resedoge)['balance']
-    return BalanceDoge
+    return dict(resedoge)['balance']
 # =============================================================================
 class BrainWallet:
 
     @staticmethod
     def generate_address_from_passphrase(passphrase):
-        private_key = str(hashlib.sha256(
-            passphrase.encode('utf-8')).hexdigest())
+        private_key = hashlib.sha256(passphrase.encode('utf-8')).hexdigest()
         address =  BrainWallet.generate_address_from_private_key(private_key)
         return private_key, address
 
     @staticmethod
     def generate_address_from_private_key(private_key):
         public_key = BrainWallet.__private_to_public(private_key)
-        address = BrainWallet.__public_to_address(public_key)
-        return address
+        return BrainWallet.__public_to_address(public_key)
 
     @staticmethod
     def __private_to_public(private_key):
@@ -243,8 +252,7 @@ class BrainWallet:
         key_hex = codecs.encode(key_bytes, 'hex')
         # Add bitcoin byte
         bitcoin_byte = b'04'
-        public_key = bitcoin_byte + key_hex
-        return public_key
+        return bitcoin_byte + key_hex
 
     @staticmethod
     def __public_to_address(public_key):
@@ -271,8 +279,7 @@ class BrainWallet:
         checksum = sha256_2_hex[:8]
         # Concatenate public key and checksum to get the address
         address_hex = (network_bitcoin_public_key + checksum).decode('utf-8')
-        wallet = BrainWallet.base58(address_hex)
-        return wallet
+        return BrainWallet.base58(address_hex)
 
     @staticmethod
     def base58(address_hex):
@@ -290,8 +297,8 @@ class BrainWallet:
             address_int //= 58
         # Add '1' for each 2 leading zeros
         ones = leading_zeros // 2
-        for one in range(ones):
-            b58_string = '1' + b58_string
+        for _ in range(ones):
+            b58_string = f'1{b58_string}'
         return b58_string
 # =============================================================================
 def data_wallet():
@@ -354,10 +361,10 @@ def parseTx(txn):
         print('UnSupported Tx Input. Presence of Witness Data')
         sys.exit(1)
     inp_nu = int(txn[8:10], 16)
-    
-    first = txn[0:10]
+
+    first = txn[:10]
     cur = 10
-    for m in range(inp_nu):
+    for _ in range(inp_nu):
         prv_out = txn[cur:cur+64]
         var0 = txn[cur+64:cur+64+8]
         cur = cur+64+8
@@ -372,7 +379,9 @@ def parseTx(txn):
 
 def get_rawtx_from_blockchain(txid):
     try:
-        htmlfile = urlopen("https://blockchain.info/rawtx/%s?format=hex" % txid, timeout = 20)
+        htmlfile = urlopen(
+            f"https://blockchain.info/rawtx/{txid}?format=hex", timeout=20
+        )
     except:
         print('Unable to connect internet to fetch RawTx. Exiting..')
         sys.exit(1)
@@ -389,12 +398,9 @@ def getSignableTxn(parsed):
         for i in range(tot):
             e += inp_list[i][0] # prev_txid
             e += inp_list[i][1] # var0
-            if one == i: 
-                e += '1976a914' + HASH160(inp_list[one][4]) + '88ac'
-            else:
-                e += '00'
+            e += f'1976a914{HASH160(inp_list[one][4])}88ac' if one == i else '00'
             e += inp_list[i][5] # seq
-        e += rest + "01000000"
+        e += f"{rest}01000000"
         z = hashlib.sha256(hashlib.sha256(bytes.fromhex(e)).digest()).hexdigest()
         res.append([inp_list[one][2], inp_list[one][3], z, inp_list[one][4], e])
     return res
@@ -445,9 +451,8 @@ def iter_all(count):
         for a in alphabet:
             if count == a:
                 continue
-            else:
-                for scan in iter_all(count-1):
-                    yield scan + a
+            for scan in iter_all(count-1):
+                yield scan + a
 # =============================================================================
 def hash160pub(hex_str):
     sha = hashlib.sha256()
